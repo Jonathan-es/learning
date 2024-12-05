@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-scale=1.0">
+    <title>英文單字測驗</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #4CAF50;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        #setup, #quiz {
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 800px;
+            margin: 20px;
+            text-align: center;
+        }
+
+        #question {
+            font-size: 20px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .answer-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            border-radius: 5px;
+            margin: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .answer-btn:hover {
+            background-color: #45a049;
+        }
+
+        #result, #score, #quiz-results {
+            margin-top: 30px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .correct {
+            color: green;
+        }
+
+        .incorrect {
+            color: red;
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-container button {
+            font-size: 18px;
+            padding: 12px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-container button:hover {
+            background-color: #45a049;
+        }
+
+        #quiz-results p {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        #quiz-results p.correct {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+
+        #quiz-results p.incorrect {
+            background-color: #ffebee;
+            border-color: #f44336;
+        }
+
+        p {
+            font-size: 18px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .changelog {
+            font-size: 14px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1>Leo英文單字測驗  UPDATE 1.1.1</h1>
+    <div id="setup">
+        <p>本測驗系統是根據教育部公布的1000個小學生程度的英文單字，</p>
+        <p>所創建的測驗系統，你可以選擇每次考五個、十個、或20個單字，進行測驗。</p>
+        <p>選擇題目數量：</p>
+        <div class="btn-container">
+            <button onclick="startQuiz(5)">5題</button>
+            <button onclick="startQuiz(10)">10題</button>
+            <button onclick="startQuiz(20)">20題</button>
+        </div>
+        <p class="changelog">Changelogs Sep 15, 2024: 修正了"大多數答案都是B"，增加了"Changelogs"</p>
+    </div>
+
+    <div id="quiz" style="display: none;">
+        <div id="question"></div>
+        <div class="btn-container">
+            <button class="answer-btn" id="optionA" onclick="checkAnswer('A')">A</button>
+            <button class="answer-btn" id="optionB" onclick="checkAnswer('B')">B</button>
+            <button class="answer-btn" id="optionC" onclick="checkAnswer('C')">C</button>
+            <button class="answer-btn" id="optionD" onclick="checkAnswer('D')">D</button>
+        </div>
+    </div>
+
+    <div id="result"></div>
+    <div id="score"></div>
+    <div id="quiz-results"></div>
+
+    <script>
+        const questions = [
+            {q: "Kangaroo:", a: "C", options: ["書本", "電視", "袋鼠", "玩具"]},
+            {q: "Hungry:", a: "B", options: ["興奮", "餓", "跑步", "唱歌"]},
+            {q: "Shoulder:", a: "A", options: ["肩膀", "窗戶", "鞋子", "盤子"]},
+            {q: "Knee:", a: "B", options: ["鑰匙", "膝蓋", "知識", "國王"]},
+            {q: "Smile:", a: "D", options: ["聞", "唱歌", "小", "微笑"]},
+            {q: "Tooth:", a: "D", options: ["真相", "樹", "十", "牙齒"]},
+            {q: "Finger:", a: "A", options: ["手指", "找到", "完成", "消防員"]},
+            {q: "Neck:", a: "C", options: ["下一個", "需要", "脖子", "從不"]},
+            {q: "Stomach:", a: "B", options: ["故事", "胃", "商店", "學生"]},
+            {q: "Foot:", a: "C", options: ["食物", "開心", "腳", "前面"]},
+            {q: "Blind:", a: "A", options: ["盲的", "藍色", "吹", "相信"]},
+            {q: "Laugh:", a: "B", options: ["晚", "笑", "離開", "最後"]},
+            {q: "Brush:", a: "A", options: ["刷子", "說", "公車", "忙碌"]},
+            {q: "Sound:", a: "D", options: ["南方", "坐下", "某些", "聲音"]},
+            {q: "Voice:", a: "B", options: ["投票", "聲音", "訪問", "蔬菜"]},
+            {q: "Restroom:", a: "C", options: ["休息", "餐廳", "洗手間", "閱讀室"]},
+            {q: "Knock:", a: "B", options: ["知道", "敲", "膝蓋", "刀子"]},
+            {q: "Lamp:", a: "C", options: ["跳", "笑", "燈", "晚"]},
+            {q: "Bath:", a: "B", options: ["但是", "浴", "麵包", "書"]},
+            {q: "Couch:", a: "A", options: ["沙發", "咳嗽", "數數", "國家"]},
+            {q: "Television:", a: "D", options: ["告訴", "教師", "十", "電視"]},
+            {q: "Piano:", a: "B", options: ["飛機", "鋼琴", "圖片", "派對"]},
+            {q: "Radio:", a: "A", options: ["收音機", "半徑", "兔子", "閱讀"]},
+            {q: "Noodles:", a: "C", options: ["點頭", "針", "麵條", "數字"]},
+            {q: "Beef:", a: "C", options: ["蜜蜂", "之前", "牛肉", "相信"]},
+            {q: "Steak:", a: "B", options: ["說話", "牛排", "學習", "星星"]},
+            {q: "Butter:", a: "D", options: ["但是", "按鈕", "更好", "奶油"]},
+            {q: "Ham:", a: "B", options: ["他", "火腿", "高", "電話"]},
+            {q: "Milk:", a: "C", options: ["爆米花", "派對", "照片", "牛奶"]},
+            {q: "Egg:", a: "D", options: ["臉", "耳朵", "地球", "雞蛋"]},
+            {q: "Cake:", a: "C", options: ["杯子", "口袋", "蛋糕", "電視"]},
+            {q: "Pie:", a: "B", options: ["筆", "派", "袋", "坡"]},
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function startQuiz(numQuestions) {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById("setup").style.display = "none";
+            document.getElementById("quiz").style.display = "block";
+            document.getElementById("quiz-results").innerHTML = '';
+            nextQuestion(numQuestions);
+        }
+
+        function nextQuestion(numQuestions) {
+            if (currentQuestion < numQuestions) {
+                const question = questions[currentQuestion];
+                document.getElementById("question").innerText = `${currentQuestion + 1}. ${question.q}`;
+                document.getElementById("optionA").innerText = "A. " + question.options[0];
+                document.getElementById("optionB").innerText = "B. " + question.options[1];
+                document.getElementById("optionC").innerText = "C. " + question.options[2];
+                document.getElementById("optionD").innerText = "D. " + question.options[3];
+                currentQuestion++;
+            } else {
+                document.getElementById("quiz").style.display = "none";
+                document.getElementById("result").innerHTML = `<p>Your final score is: ${score} / ${numQuestions}</p>`;
+                document.getElementById("score").innerHTML = `You scored ${score} out of ${numQuestions}`;
+                document.getElementById("quiz-results").style.display = "block";
+            }
+        }
+
+        function checkAnswer(selected) {
+            const correctAnswer = questions[currentQuestion - 1].a;
+            const resultDiv = document.createElement('p');
+            if (selected === correctAnswer) {
+                score++;
+                resultDiv.classList.add('correct');
+                resultDiv.innerText = `Correct: ${questions[currentQuestion - 1].q}`;
+            } else {
+                resultDiv.classList.add('incorrect');
+                resultDiv.innerText = `Incorrect: ${questions[currentQuestion - 1].q}`;
+            }
+            document.getElementById("quiz-results").appendChild(resultDiv);
+            nextQuestion(5);
+        }
+    </script>
+</body>
+</html>

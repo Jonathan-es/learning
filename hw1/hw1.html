@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>篤金資訊購物網</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #5c4033;
+            color: #fff;
+        }
+
+        header, footer {
+            background: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            border-bottom: 4px solid #4b3621;
+        }
+
+        header h1, footer {
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        header button {
+            background-color: #8B5A2B;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        header button:hover {
+            background-color: #a0522d;
+        }
+
+        #product-list {
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+            overflow-x: auto;
+            padding: 20px;
+        }
+
+        .product {
+            background: #fff;
+            color: #333;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 10px;
+            padding: 15px;
+            text-align: center;
+            flex: 0 0 auto;
+            width: 220px;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .product:hover {
+            transform: scale(1.05);
+        }
+
+        .product img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto;
+            border-radius: 10px;
+        }
+
+        .product h2 {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+
+        .product p {
+            font-size: 16px;
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .product button {
+            background-color: #6b8e23;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .product button:hover {
+            background-color: #556b2f;
+        }
+
+        #cart-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .close {
+            float: right;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .close:hover {
+            color: red;
+        }
+
+        #cart-items {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            color: #000;
+        }
+
+        #cart-items li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            color: #000;
+        }
+
+        #cart-items li:last-child {
+            border-bottom: none;
+        }
+
+        .remove-item {
+            background-color: #b22222;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .remove-item:hover {
+            background-color: #8b0000;
+        }
+
+        #cart-total {
+            color: #000;
+            font-weight: bold;
+        }
+
+        .total-text {
+            color: #fff;
+        }
+
+        footer {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>篤金資訊購物網</h1>
+        <div>
+            購物車: <span id="cart-count">0</span> 件商品
+            <button onclick="viewCart()">查看購物車</button>
+        </div>
+    </header>
+
+    <div id="product-list"></div>
+
+    <div id="cart-modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCart()">&times;</span>
+            <h2>購物車內容</h2>
+            <ul id="cart-items"></ul>
+            <p><span class="total-text">總計:</span> $<span id="cart-total">0</span></p>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2024 篤金資訊購物網 - All Rights Reserved
+    </footer>
+
+    <script>
+        const products = [
+            { id: 1, name: 'Product 1', price: 10, image: 'picture1.png' },
+            { id: 2, name: 'Product 2', price: 20, image: 'picture2.png' },
+            { id: 3, name: 'Product 3', price: 30, image: 'picture3.png' },
+        ];
+
+        let cart = [];
+
+        function displayProducts() {
+            const productList = document.getElementById('product-list');
+            products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product';
+                productDiv.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <h2>${product.name}</h2>
+                    <p>Price: $${product.price}</p>
+                    <button onclick="addToCart(${product.id})">加入購物車</button>
+                `;
+                productList.appendChild(productDiv);
+            });
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                cart.push(product);
+                updateCartCount();
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartCount();
+            displayCartItems();
+        }
+
+        function updateCartCount() {
+            document.getElementById('cart-count').innerText = cart.length;
+        }
+
+        function viewCart() {
+            document.getElementById('cart-modal').style.display = 'block';
+            displayCartItems();
+        }
+
+        function closeCart() {
+            document.getElementById('cart-modal').style.display = 'none';
+        }
+
+        function displayCartItems() {
+            const cartItemsList = document.getElementById('cart-items');
+            cartItemsList.innerHTML = '';
+            let total = 0;
+            cart.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${item.name} - $${item.price}</span>
+                    <button class="remove-item" onclick="removeFromCart(${index})">刪除</button>
+                `;
+                cartItemsList.appendChild(li);
+                total += item.price;
+            });
+            document.getElementById('cart-total').innerText = total.toFixed(2);
+        }
+
+        displayProducts();
+    </script>
+</body>
+</html>
